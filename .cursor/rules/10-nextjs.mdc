@@ -1,0 +1,77 @@
+---
+description: Next.js specific development rules
+globs: "**/*.{ts,tsx,js,jsx}"
+---
+
+# Next.js Development Rules
+
+## Framework-Specific Mandates
+
+1. **App Router First**
+   - Use the App Router (`app/` directory) for all new routes
+   - Leverage Server Components by default
+   - Only use Client Components when necessary (interactivity, hooks, browser APIs)
+   - Mark Client Components with `'use client'` directive
+
+2. **Server Components Best Practices**
+   - Fetch data directly in Server Components
+   - Use `async/await` for data fetching
+   - Avoid `useEffect` for data fetching - use Server Components instead
+   - Keep Server Components pure and stateless
+
+3. **Client Components**
+   - Use Client Components for:
+     - Event handlers (`onClick`, `onChange`, etc.)
+     - State and lifecycle hooks (`useState`, `useEffect`)
+     - Browser-only APIs
+     - Third-party libraries that rely on browser APIs
+   - Keep Client Components small and focused
+
+4. **Data Fetching**
+   - Use `fetch` with Next.js caching by default
+   - Implement proper error boundaries
+   - Use `loading.tsx` for loading states
+   - Use `error.tsx` for error handling
+
+5. **Routing**
+   - Use `<Link>` component for navigation
+   - Implement proper metadata in `layout.tsx` and `page.tsx`
+   - Use route groups `(group)` for organization without affecting URL structure
+   - Leverage parallel routes and intercepting routes when appropriate
+
+6. **Performance**
+   - Use `next/image` for all images
+   - Implement proper `alt` text for accessibility
+   - Use dynamic imports for code splitting
+   - Optimize fonts with `next/font`
+
+7. **API Routes**
+   - Use Route Handlers (`app/api/*/route.ts`) for API endpoints
+   - Implement proper HTTP methods (GET, POST, PUT, DELETE)
+   - Return `NextResponse` objects
+   - Handle errors gracefully
+
+## File Structure
+
+```
+app/
+├── (routes)/
+│   ├── page.tsx          # Home page
+│   ├── layout.tsx        # Root layout
+│   └── [feature]/
+│       ├── page.tsx
+│       └── components/   # Feature-specific components
+├── api/
+│   └── [endpoint]/
+│       └── route.ts
+└── components/           # Shared components
+    ├── ui/              # UI primitives
+    └── features/        # Feature components
+```
+
+## Testing
+
+- Test Server Components with integration tests
+- Test Client Components with unit tests
+- Mock `next/navigation` in tests
+- Use `@testing-library/react` for component tests
