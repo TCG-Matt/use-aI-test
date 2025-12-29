@@ -1,0 +1,130 @@
+---
+description: React Native development rules
+globs: "**/*.{ts,tsx,js,jsx}"
+---
+
+# React Native Development Rules
+
+## Framework-Specific Mandates
+
+1. **Expo First**
+   - Use Expo for development unless native modules require bare React Native
+   - Leverage Expo SDK for common features (camera, location, notifications)
+   - Use EAS for builds and updates
+
+2. **Component Structure**
+   - Use functional components with hooks
+   - Avoid class components
+   - Keep components small and focused
+   - Extract reusable logic into custom hooks
+
+3. **Styling**
+   - Use StyleSheet.create() for styles
+   - Implement responsive design with Dimensions or useWindowDimensions
+   - Use Platform-specific code when necessary
+   - Consider using styled-components or NativeWind for advanced styling
+
+4. **Navigation**
+   - Use React Navigation for routing
+   - Implement proper TypeScript types for navigation
+   - Use stack, tab, and drawer navigators appropriately
+   - Handle deep linking
+
+5. **State Management**
+   - Use React Context for simple global state
+   - Consider Zustand or Redux Toolkit for complex state
+   - Use React Query for server state
+   - Keep local state in components when possible
+
+6. **Performance**
+   - Use FlatList/SectionList for long lists (never ScrollView with map)
+   - Implement proper key props
+   - Use React.memo for expensive components
+   - Optimize images with proper sizes and formats
+   - Use Hermes engine for better performance
+
+7. **Platform-Specific Code**
+   ```typescript
+   import { Platform } from 'react-native';
+   
+   const styles = StyleSheet.create({
+     container: {
+       paddingTop: Platform.OS === 'ios' ? 20 : 0,
+     },
+   });
+   ```
+
+8. **Async Storage**
+   - Use @react-native-async-storage/async-storage for local storage
+   - Implement proper error handling
+   - Consider using MMKV for better performance
+
+## File Structure
+
+```
+app/
+├── (tabs)/              # Tab navigator routes
+│   ├── index.tsx        # Home tab
+│   ├── profile.tsx
+│   └── _layout.tsx
+├── (auth)/              # Auth stack
+│   ├── login.tsx
+│   └── register.tsx
+├── components/
+│   ├── ui/             # UI primitives
+│   └── features/       # Feature components
+├── hooks/              # Custom hooks
+├── utils/              # Utility functions
+├── constants/          # Constants and theme
+└── types/              # TypeScript types
+```
+
+## Testing
+
+- Use Jest for unit tests
+- Use React Native Testing Library for component tests
+- Test custom hooks with @testing-library/react-hooks
+- Use Detox for E2E tests
+
+## Common Patterns
+
+### Safe Area
+```typescript
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export function Screen() {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      {/* Content */}
+    </SafeAreaView>
+  );
+}
+```
+
+### Keyboard Avoiding
+```typescript
+import { KeyboardAvoidingView, Platform } from 'react-native';
+
+<KeyboardAvoidingView
+  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  style={{ flex: 1 }}
+>
+  {/* Content */}
+</KeyboardAvoidingView>
+```
+
+## Accessibility
+
+- Add accessibilityLabel to all interactive elements
+- Use accessibilityRole appropriately
+- Test with screen readers (TalkBack/VoiceOver)
+- Ensure proper color contrast
+
+## Performance Tips
+
+1. Use FlatList with proper optimization props
+2. Avoid inline functions in render
+3. Use React.memo for pure components
+4. Optimize images (use WebP, proper sizes)
+5. Use Hermes for better startup time
+6. Profile with Flipper

@@ -1,0 +1,39 @@
+{
+  "name": "ai-poc-template",
+  "version": "1.0.0",
+  "description": "A Git template for AI Proof of Concepts with strict guard rails and best practices",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "vitest",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "build": "tsc",
+    "verify": "npm run type-check && npm run lint && npm run test",
+    "type-check": "tsc --noEmit",
+    "prepare": "husky install",
+    "scaffold": "node scripts/scaffold.js"
+  },
+  "keywords": [
+    "ai",
+    "template",
+    "poc",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=24.12.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0",
+    "vitest": "^4.0.16"
+  }
+}

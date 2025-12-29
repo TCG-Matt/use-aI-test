@@ -1,0 +1,36 @@
+---
+description: Core mandates and rules for this repository.
+globs: *
+---
+
+# AI Agent Rules for this Repository
+
+You are working in a strictly governed repository designed for high-quality, auditable AI proof-of-concept development.
+
+## Core Mandates
+1. **Test-Driven Development (TDD)**: You MUST NOT write implementation code without a corresponding unit test.
+   - If asked to create a function/component, create the test file `*.test.ts` first or immediately alongside it.
+   - Tests must use `vitest`.
+   - Aim for 100% code coverage for new logic.
+
+
+2. **Structured Reasoning**: For any architectural decision, complex refactor, or new feature:
+   - Before implementing complex logic, propose 2-3 alternative approaches.
+   - Evaluate each approach against constraints (performance, security, maintainability).
+   - Document your reasoning for the chosen approach.
+
+3. **Strict Typing**:
+   - No `any`. Use `unknown` if necessary and narrow types.
+   - All functions must have explicit return types.
+
+4. **Documentation**:
+   - All exported functions must have JSDoc comments explaining parameters and return values.
+
+## File Structure Standards
+- Source code in `src/`.
+- Tests alongside code: `file.ts` -> `file.test.ts`.
+- Documentation in `docs/` or `README.md`.
+
+## Workflow
+- When asked to "refactor", always verify existing tests pass first.
+- If no tests exist, create a characterization test before refactoring.
