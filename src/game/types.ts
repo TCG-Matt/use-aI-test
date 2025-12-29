@@ -91,11 +91,27 @@ export interface Armor extends BaseItem {
 }
 
 /**
+ * Potion effect types
+ */
+export type PotionEffectType = 'strength' | 'blindness' | 'spawn_monster' | 'poison' | 'vitality';
+
+/**
+ * Active effect on player
+ */
+export interface ActiveEffect {
+  type: PotionEffectType;
+  duration: number; // number of steps remaining
+  magnitude: number; // effect strength
+}
+
+/**
  * Potion item
  */
 export interface Potion extends BaseItem {
   type: 'potion_health' | 'potion_strength';
   restoreAmount: number;
+  unknown?: boolean; // Unknown effect until used
+  trueEffect?: PotionEffectType; // The actual random effect
 }
 
 /**
@@ -123,6 +139,8 @@ export interface Player {
   armor: Armor | null;
   inventory: Item[];
   level: number; // dungeon level
+  activeEffects: ActiveEffect[]; // Active potion effects
+  identifiedPotions: PotionEffectType[]; // Known potion effects
 }
 
 /**

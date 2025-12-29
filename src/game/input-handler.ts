@@ -59,12 +59,10 @@ export function isActionKey(key: string): boolean {
  */
 export type GameAction =
   | { type: 'move'; direction: Direction }
-  | { type: 'pickup' }
+  | { type: 'interact' }
   | { type: 'inventory' }
   | { type: 'wait' }
   | { type: 'menu' }
-  | { type: 'stairs_up' }
-  | { type: 'stairs_down' }
   | null;
 
 /**
@@ -80,17 +78,13 @@ export function keyToAction(key: string): GameAction {
 
   switch (key) {
     case 'e':
-      return { type: 'pickup' };
+      return { type: 'interact' };
     case 'i':
       return { type: 'inventory' };
     case ' ':
       return { type: 'wait' };
     case 'Escape':
       return { type: 'menu' };
-    case '<':
-      return { type: 'stairs_up' };
-    case '>':
-      return { type: 'stairs_down' };
     default:
       return null;
   }

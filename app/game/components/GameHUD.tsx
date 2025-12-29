@@ -35,8 +35,10 @@ export function GameHUD({ gameState }: GameHUDProps) {
         </div>
 
         <div>
-          <div className="text-sm text-gray-400">Strength</div>
-          <div className="text-xl font-bold">{player.strength}</div>
+          <div className="text-sm text-gray-400">Damage</div>
+          <div className="text-xl font-bold text-orange-500">
+            {player.strength + (player.weapon?.damage || 0)}
+          </div>
         </div>
 
         <div>
@@ -60,6 +62,20 @@ export function GameHUD({ gameState }: GameHUDProps) {
         </div>
       </div>
 
+      {/* Active Effects */}
+      {player.activeEffects && player.activeEffects.length > 0 && (
+        <div className="border-t border-gray-700 pt-4">
+          <div className="text-sm text-gray-400 mb-2">Active Effects</div>
+          <div className="space-y-1 text-xs">
+            {player.activeEffects.map((effect, i) => (
+              <div key={i} className="text-yellow-400">
+                {effect.type.charAt(0).toUpperCase() + effect.type.slice(1)} ({effect.duration} turns)
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="border-t border-gray-700 pt-4">
         <div className="text-sm text-gray-400 mb-2">Messages</div>
@@ -82,9 +98,8 @@ export function GameHUD({ gameState }: GameHUDProps) {
       {/* Controls Help */}
       <div className="border-t border-gray-700 pt-4 text-xs text-gray-500">
         <div>WASD/Arrows: Move</div>
-        <div>E: Pick up item</div>
+        <div>E: Interact (pick up / use stairs)</div>
         <div>I: Inventory</div>
-        <div>&lt; / &gt;: Use stairs</div>
         <div>ESC: Menu</div>
       </div>
     </div>

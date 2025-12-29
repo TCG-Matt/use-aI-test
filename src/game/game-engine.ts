@@ -9,6 +9,53 @@ import { createPlayer, equipWeapon, equipArmor, addToInventory, canCarryMore, he
 import { canSeePlayer, moveTowardsPlayer, damageMob } from './entities/mob';
 import { resolveCombat } from './combat';
 import { getRoomCenter } from './dungeon-generator';
+import {
+  processActiveEffects,
+  applyPotionEffect,
+  getAdjustedViewRadius,
+  getRandomPotionEffect,
+} from './potion-effects';
+
+/**
+ * Handle player interaction (pick up item or use stairs)
+ * @param state - Current game state
+ * @returns Updated game state
+ */
+export function handleInteract(state: GameState): GameState {
+  if (state.gameOver) {
+    return state;
+  }
+
+  const playerPos = state.player.position;
+  const currentTile = state.currentDungeon.tiles[playerPos.y][playerPos.x];
+
+  // Check for item at position
+  const itemAtPosition = state.items.find(
+    (item) =>
+      item.position &&
+      item.position.x === playerPos.x &&
+      item.position.y === playerPos.y
+  );
+
+  if (itemAtPosition) {
+    return pickupItem(state);
+  }
+
+  // Check for stairs
+  if (currentTile.type === 'stair_up') {
+    return changeLevel('up', state);
+  }
+
+  if (currentTile.type === 'stair_down') {
+    return changeLevel('down', state);
+  }
+
+  // Nothing to interact with
+  return {
+    ...state,
+    messages: [...state.messages, 'Nothing to interact with here.'],
+  };
+}
 
 /**
  * Initialize a new game
@@ -120,6 +167,23 @@ export function handlePlayerMove(direction: Direction, state: GameState): GameSt
       newState.mobs = state.mobs.map((m) =>
         m.id === mobAtPosition.id ? damageMob(m, result.damage) : m
       );
+      
+      // Mob counter-attacks!
+      const counterAttack = resolveCombat(
+        mobAtPosition,
+        newState.player,
+        mobAtPosition.type,
+        'You'
+      );
+      messages.push(
+        `${counterAttack.attackerName} counter-attacks for ${counterAttack.damage} damage!`
+      );
+      newState.player = damagePlayer(newState.player, counterAttack.damage);
+
+      if (newState.player.health <= 0) {
+        messages.push('You have been defeated!');
+        newState.gameOver = true;
+      }
     }
 
     newState.messages = messages;
@@ -132,8 +196,22 @@ export function handlePlayerMove(direction: Direction, state: GameState): GameSt
     position: newPos,
   };
 
-  // Update visibility
-  updateVisibility(newState.currentDungeon, newPos, 7);
+  // Process active effects each step
+  const effectResult = processActiveEffects(newState.player);
+  newState.player = effectResult.player;
+  messages.push(...effectResult.messages);
+
+  // Check for game over from poison
+  if (newState.player.health <= 0) {
+    messages.push('You have been defeated!');
+    newState.gameOver = true;
+    newState.messages = messages;
+    return newState;
+  }
+
+  // Update visibility with adjusted radius for blindness
+  const viewRadius = getAdjustedViewRadius(newState.player, 7);
+  updateVisibility(newState.currentDungeon, newPos, viewRadius);
 
   // Update mobs
   newState = updateMobs(newState);
@@ -211,6 +289,7 @@ export function useItem(itemId: string, state: GameState): GameState {
   }
 
   let newPlayer = state.player;
+  let newState = { ...state };
   const messages = [...state.messages];
 
   switch (item.type) {
@@ -233,21 +312,58 @@ export function useItem(itemId: string, state: GameState): GameState {
       messages.push(`Equipped ${item.name}`);
       break;
     case 'potion_health':
-      newPlayer = healPlayer(newPlayer, item.restoreAmount);
+    case 'potion_strength': {
+      // Check if it's an unknown potion
+      const potion = item as any;
+      if (potion.unknown && potion.trueEffect) {
+        // Apply the true random effect
+        const effectResult = applyPotionEffect(newPlayer, potion.trueEffect);
+        newPlayer = effectResult.player;
+        messages.push(...effectResult.messages);
+        
+        // Spawn monster if needed
+        if (effectResult.spawnedMob) {
+          // Find empty adjacent position
+          const adjacentPositions = [
+            { x: newPlayer.position.x + 1, y: newPlayer.position.y },
+            { x: newPlayer.position.x - 1, y: newPlayer.position.y },
+            { x: newPlayer.position.x, y: newPlayer.position.y + 1 },
+            { x: newPlayer.position.x, y: newPlayer.position.y - 1 },
+          ];
+          
+          const validPos = adjacentPositions.find((pos) => {
+            return (
+              pos.x >= 0 &&
+              pos.x < state.currentDungeon.width &&
+              pos.y >= 0 &&
+              pos.y < state.currentDungeon.height &&
+              state.currentDungeon.tiles[pos.y][pos.x].type !== 'wall' &&
+              !state.mobs.some((m) => m.position.x === pos.x && m.position.y === pos.y)
+            );
+          });
+          
+          if (validPos) {
+            effectResult.spawnedMob.position = validPos;
+            newState.mobs = [...state.mobs, effectResult.spawnedMob];
+          }
+        }
+      } else {
+        // Regular health/strength potion
+        if (item.type === 'potion_health') {
+          newPlayer = healPlayer(newPlayer, item.restoreAmount);
+          messages.push(`Used ${item.name}, restored ${item.restoreAmount} health`);
+        } else {
+          newPlayer = increaseStrength(newPlayer, item.restoreAmount);
+          messages.push(`Used ${item.name}, increased strength by ${item.restoreAmount}`);
+        }
+      }
+      
       newPlayer = {
         ...newPlayer,
         inventory: newPlayer.inventory.filter((i) => i.id !== itemId),
       };
-      messages.push(`Used ${item.name}, restored ${item.restoreAmount} health`);
       break;
-    case 'potion_strength':
-      newPlayer = increaseStrength(newPlayer, item.restoreAmount);
-      newPlayer = {
-        ...newPlayer,
-        inventory: newPlayer.inventory.filter((i) => i.id !== itemId),
-      };
-      messages.push(`Used ${item.name}, increased strength by ${item.restoreAmount}`);
-      break;
+    }
     case 'food':
       newPlayer = healPlayer(newPlayer, item.restoreAmount);
       newPlayer = {
@@ -259,7 +375,7 @@ export function useItem(itemId: string, state: GameState): GameState {
   }
 
   return {
-    ...state,
+    ...newState,
     player: newPlayer,
     messages,
   };

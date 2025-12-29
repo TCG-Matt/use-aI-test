@@ -3,6 +3,7 @@
  */
 
 import type { Room, Corridor, Dungeon, Position, Item, Mob, ItemType, Tile, TileType, VisibilityState } from './types';
+import { getRandomPotionEffect } from './potion-effects';
 
 /**
  * Check if two rooms overlap with a minimum separation distance
@@ -161,11 +162,22 @@ export function populateRoom(room: Room, level: number): Item[] {
   const items: Item[] = [];
   const itemTypes: ItemType[] = ['weapon', 'armor', 'potion_health', 'potion_strength', 'food'];
 
-  // Random number of items (0-3 per room)
-  const itemCount = Math.floor(Math.random() * 4);
+  // Higher chance of items (0-4 per room)
+  const itemCount = Math.floor(Math.random() * 5);
 
-  for (let i = 0; i < itemCount; i++) {
-    const itemType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+  // Increase food spawn rate (30% of items should be food)
+  const foodBonus = Math.random() < 0.3 ? 1 : 0;
+
+  for (let i = 0; i < itemCount + foodBonus; i++) {
+    let itemType: ItemType;
+    
+    // 30% chance for food
+    if (i >= itemCount || Math.random() < 0.3) {
+      itemType = 'food';
+    } else {
+      itemType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+    }
+    
     const x = room.x + 1 + Math.floor(Math.random() * (room.width - 2));
     const y = room.y + 1 + Math.floor(Math.random() * (room.height - 2));
 
@@ -196,33 +208,43 @@ export function populateRoom(room: Room, level: number): Item[] {
         });
         break;
       }
-      case 'potion_health':
+      case 'potion_health': {
+        const trueEffect = getRandomPotionEffect();
         items.push({
           id: itemId,
           type: 'potion_health',
-          name: 'Health Potion',
-          restoreAmount: 30 + Math.floor(level * 5),
+          name: 'Unknown Potion',
+          restoreAmount: 0,
           position: { x, y },
-        });
+          unknown: true,
+          trueEffect,
+        } as any);
         break;
-      case 'potion_strength':
+      }
+      case 'potion_strength': {
+        const trueEffect = getRandomPotionEffect();
         items.push({
           id: itemId,
           type: 'potion_strength',
-          name: 'Strength Potion',
-          restoreAmount: 5 + Math.floor(level * 2),
+          name: 'Unknown Potion',
+          restoreAmount: 0,
           position: { x, y },
-        });
+          unknown: true,
+          trueEffect,
+        } as any);
         break;
-      case 'food':
+      }
+      case 'food': {
+        const healAmount = 1 + Math.floor(Math.random() * 3); // 1, 2, or 3
         items.push({
           id: itemId,
           type: 'food',
-          name: 'Food',
-          restoreAmount: 15 + Math.floor(level * 2),
+          name: `Food (+${healAmount})`,
+          restoreAmount: healAmount,
           position: { x, y },
         });
         break;
+      }
     }
   }
 
@@ -244,8 +266,8 @@ export function generateMobs(room: Room, level: number): Mob[] {
     'dragon',
   ];
 
-  // 50% chance of having mobs in a room
-  if (Math.random() > 0.5) {
+  // 40% chance of having mobs in a room (reduced from 50%)
+  if (Math.random() > 0.4) {
     return mobs;
   }
 

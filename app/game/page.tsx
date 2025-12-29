@@ -7,9 +7,8 @@ import { InventoryMenu, GameMenu } from './components/GameMenu';
 import {
   initializeGame,
   handlePlayerMove,
-  pickupItem,
+  handleInteract,
   useItem,
-  changeLevel,
 } from '@/game/game-engine';
 import { keyToAction, type GameAction } from '@/game/input-handler';
 import { saveGame, loadGame, hasSavedGame, clearSave } from '@/game/save-manager';
@@ -38,7 +37,7 @@ export default function GamePage() {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent default for game keys
-      if (['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', ' ', 'e', 'i', '<', '>', 'Escape'].includes(e.key)) {
+      if (['w', 'a', 's', 'd', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight', ' ', 'e', 'i', 'Escape'].includes(e.key)) {
         e.preventDefault();
       }
 
@@ -49,20 +48,14 @@ export default function GamePage() {
         case 'move':
           setGameState((prev: GameState | null) => (prev ? handlePlayerMove(action.direction, prev) : prev));
           break;
-        case 'pickup':
-          setGameState((prev: GameState | null) => (prev ? pickupItem(prev) : prev));
+        case 'interact':
+          setGameState((prev: GameState | null) => (prev ? handleInteract(prev) : prev));
           break;
         case 'inventory':
           setShowInventory(true);
           break;
         case 'menu':
           setShowMenu(true);
-          break;
-        case 'stairs_up':
-          setGameState((prev: GameState | null) => (prev ? changeLevel('up', prev) : prev));
-          break;
-        case 'stairs_down':
-          setGameState((prev: GameState | null) => (prev ? changeLevel('down', prev) : prev));
           break;
       }
     };

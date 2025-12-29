@@ -3,6 +3,7 @@
  */
 
 import type { Item, ItemType, Position, Mob } from '../types';
+import { getRandomPotionEffect, getPotionName } from '../potion-effects';
 
 /**
  * Create an item
@@ -37,30 +38,40 @@ export function createItem(type: ItemType, position: Position, level: number): I
         position,
       };
     }
-    case 'potion_health':
+    case 'potion_health': {
+      const trueEffect = getRandomPotionEffect();
       return {
         id: itemId,
         type: 'potion_health',
-        name: 'Health Potion',
-        restoreAmount: 30 + Math.floor(level * 5),
+        name: 'Unknown Potion',
+        restoreAmount: 0,
         position,
-      };
-    case 'potion_strength':
+        unknown: true,
+        trueEffect,
+      } as any;
+    }
+    case 'potion_strength': {
+      const trueEffect = getRandomPotionEffect();
       return {
         id: itemId,
         type: 'potion_strength',
-        name: 'Strength Potion',
-        restoreAmount: 5 + Math.floor(level * 2),
+        name: 'Unknown Potion',
+        restoreAmount: 0,
         position,
-      };
-    case 'food':
-      return {
-        id: itemId,
-        type: 'food',
-        name: 'Food',
-        restoreAmount: 15 + Math.floor(level * 2),
-        position,
-      };
+        unknown: true,
+        trueEffect,
+      } as any;
+    }
+      case 'food': {
+        const healAmount = 1 + Math.floor(Math.random() * 3); // 1, 2, or 3
+        return {
+          id: itemId,
+          type: 'food',
+          name: `Food (+${healAmount})`,
+          restoreAmount: healAmount,
+          position,
+        };
+      }
   }
 }
 

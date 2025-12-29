@@ -22,6 +22,8 @@ export function createPlayer(position: Position, level: number): Player {
     armor: null,
     inventory: [],
     level,
+    activeEffects: [],
+    identifiedPotions: [],
   };
 }
 

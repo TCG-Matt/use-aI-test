@@ -1,60 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import { resolveCombat, calculateDamage } from './combat';
 import type { Player, Mob } from './types';
+import { createPlayer } from './entities/player';
 
 describe('Combat System', () => {
   describe('calculateDamage', () => {
     it('should calculate basic damage', () => {
-      const attacker: Player = {
-        position: { x: 5, y: 5 },
-        health: 100,
-        maxHealth: 100,
-        strength: 10,
-        weapon: null,
-        armor: null,
-        inventory: [],
-        level: 1,
-      };
-      const defender: Player = {
-        position: { x: 6, y: 5 },
-        health: 100,
-        maxHealth: 100,
-        strength: 10,
-        weapon: null,
-        armor: null,
-        inventory: [],
-        level: 1,
-      };
+      const attacker = createPlayer({ x: 5, y: 5 }, 1);
+      const defender = createPlayer({ x: 6, y: 5 }, 1);
       const damage = calculateDamage(attacker, defender);
       expect(damage).toBe(10); // Base strength
     });
 
     it('should add weapon damage', () => {
-      const attacker: Player = {
-        position: { x: 5, y: 5 },
-        health: 100,
-        maxHealth: 100,
-        strength: 10,
-        weapon: {
-          id: 'sword1',
-          type: 'weapon',
-          name: 'Sword',
-          damage: 5,
-        },
-        armor: null,
-        inventory: [],
-        level: 1,
+      const attacker = createPlayer({ x: 5, y: 5 }, 1);
+      attacker.weapon = {
+        id: 'sword1',
+        type: 'weapon',
+        name: 'Sword',
+        damage: 5,
       };
-      const defender: Player = {
-        position: { x: 6, y: 5 },
-        health: 100,
-        maxHealth: 100,
-        strength: 10,
-        weapon: null,
-        armor: null,
-        inventory: [],
-        level: 1,
-      };
+      const defender = createPlayer({ x: 6, y: 5 }, 1);
       const damage = calculateDamage(attacker, defender);
       expect(damage).toBe(15); // Strength + weapon
     });

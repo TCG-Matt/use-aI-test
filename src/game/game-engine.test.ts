@@ -83,10 +83,18 @@ describe('Game Engine', () => {
           x: state.player.position.x + 1,
           y: state.player.position.y,
         };
+        state.mobs[0].health = 100; // Ensure mob survives
+        const initialPlayerHealth = state.player.health;
+        
         const newState = handlePlayerMove('e', state);
-        // Should have a combat message
-        const hasCombatMessage = newState.messages.some((msg) => msg.includes('attacked'));
-        expect(hasCombatMessage).toBe(true);
+        
+        // Should have combat messages
+        const hasAttackMessage = newState.messages.some((msg) => msg.includes('You attacked'));
+        const hasCounterMessage = newState.messages.some((msg) => msg.includes('counter-attacks'));
+        
+        expect(hasAttackMessage).toBe(true);
+        expect(hasCounterMessage).toBe(true);
+        expect(newState.player.health).toBeLessThan(initialPlayerHealth);
       }
     });
 
